@@ -70,7 +70,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar', nodeTask, 
         p2pPort 10005
         rpcSettings {
             address "localhost:10006"
-            adminAddress "localhost:10015"
+            adminAddress "localhost:10008"
         }
         webPort 10007
         rpcUsers = [[user: "bankUser", password: "test", permissions: ["ALL"]]]
@@ -82,14 +82,40 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar', nodeTask, 
         }
     }
     node {
-        name "O=BigCorporation,L=New York,C=US"
-        p2pPort 10008
+        name "O=Corp1,L=New York,C=US"
+        p2pPort 10009
         rpcSettings {
-            address "localhost:10009"
-            adminAddress "localhost:10011"
+            address "localhost:10010"
+            adminAddress "localhost:10012"
         }
-        webPort 10010
-        rpcUsers = [[user: "bigCorpUser", password: "test", permissions: ["ALL"]]]
+        webPort 10011
+        rpcUsers = [[user: "corp1User", password: "test", permissions: ["ALL"]]]
+        extraConfig = [
+                h2Settings: [address: "localhost:10018"]
+        ]
+    }
+    node {
+        name "O=Corp2,L=New York,C=US"
+        p2pPort 100013
+        rpcSettings {
+            address "localhost:10014"
+            adminAddress "localhost:10016"
+        }
+        webPort 10015
+        rpcUsers = [[user: "corp2User", password: "test", permissions: ["ALL"]]]
+        extraConfig = [
+                h2Settings: [address: "localhost:10018"]
+        ]
+    }
+    node {
+        name "O=Corp3,L=New York,C=US"
+        p2pPort 10017
+        rpcSettings {
+            address "localhost:10018"
+            adminAddress "localhost:10020"
+        }
+        webPort 10019
+        rpcUsers = [[user: "corp3User", password: "test", permissions: ["ALL"]]]
         extraConfig = [
                 h2Settings: [address: "localhost:10018"]
         ]
