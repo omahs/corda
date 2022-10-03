@@ -47,9 +47,9 @@ class MassCashPaymentFlow(val numberOfPayments: Int,
     override fun call(): Result {
         progressTracker.currentStep = PAYING_RECIPIENT
         for (i in 1 until numberOfPayments) {
-            subFlow(CashPaymentFlow(Amount(1000, Currency.getInstance("USD")), recipient, anonymous, notary))
+            subFlow(CashPaymentFlow(amount, recipient, anonymous, notary))
         }
-        return subFlow(CashPaymentFlow(Amount(1000, Currency.getInstance("USD")), recipient, anonymous, notary))
+        return subFlow(CashPaymentFlow(amount, recipient, anonymous, notary))
     }
 
     @CordaSerializable

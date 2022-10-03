@@ -56,9 +56,9 @@ class MassCashIssueAndPaymentFlow(val amount: Amount<Currency>,
         subFlow(CashIssueFlow(amount, issueRef, notary))
         progressTracker.currentStep = PAYING_RECIPIENT
         for (corp in listOf(corp1, corp2)) {
-            subFlow(CashPaymentFlow(Amount(500000, Currency.getInstance("USD")), corp, anonymous, notary))
+            subFlow(CashPaymentFlow(Amount(50000000, Currency.getInstance("USD")), corp, anonymous, notary))
         }
-        return subFlow(CashPaymentFlow(Amount(500000, Currency.getInstance("USD")), corp3, anonymous, notary))
+        return subFlow(CashPaymentFlow(Amount(50000000, Currency.getInstance("USD")), corp3, anonymous, notary))
     }
 
     @CordaSerializable
