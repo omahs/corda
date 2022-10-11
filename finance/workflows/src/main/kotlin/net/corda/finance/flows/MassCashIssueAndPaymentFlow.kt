@@ -53,12 +53,15 @@ class MassCashIssueAndPaymentFlow(val amount: Amount<Currency>,
     @Suspendable
     override fun call(): Result {
         progressTracker.currentStep = ISSUING_CASH
+        (1..(amount.quantity/100)).forEach { _ ->
+            subFlow(CashIssueFlow(Amount(100, Currency.getInstance("USD")), issueRef, notary))
+        }
         subFlow(CashIssueFlow(amount, issueRef, notary))
         progressTracker.currentStep = PAYING_RECIPIENT
-        for (corp in listOf(corp1, corp2)) {
-            subFlow(CashPaymentFlow(Amount(50000000, Currency.getInstance("USD")), corp, anonymous, notary))
+        listOf(corp1, corp2).forEach { corp ->
+            subFlow(CashPaymentFlow(Amount((amount.quantity/3), Currency.getInstance("USD")), corp, anonymous, notary))
         }
-        return subFlow(CashPaymentFlow(Amount(50000000, Currency.getInstance("USD")), corp3, anonymous, notary))
+        return subFlow(CashPaymentFlow(Amount((amount.quantity/3), Currency.getInstance("USD")), corp3, anonymous, notary))
     }
 
     @CordaSerializable
