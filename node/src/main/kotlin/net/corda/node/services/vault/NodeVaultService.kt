@@ -21,6 +21,7 @@ import net.corda.core.transactions.*
 import net.corda.core.utilities.*
 import net.corda.node.services.api.SchemaService
 import net.corda.node.services.api.VaultServiceInternal
+import net.corda.node.services.keys.KeyManagementServiceInternal
 import net.corda.node.services.schema.PersistentStateService
 import net.corda.node.services.statemachine.FlowStateMachineImpl
 import net.corda.nodeapi.internal.persistence.*
@@ -70,13 +71,23 @@ class NodeVaultService(
          * A state is relevant if any of the participants (or the owner for ownable states) has an owning key matching one of this node's
          * public keys.
          */
-        fun isRelevant(state: ContractState, myKeys: Set<PublicKey>): Boolean {
+        fun isRelevant(state: ContractState, myKeys: Set<PublicKey>, ids: IdentityService): Boolean {
             val keysToCheck = when (state) {
                 is OwnableState -> listOf(state.owner.owningKey)
                 else -> state.participants.map { it.owningKey }
             }
-            return keysToCheck.any { it.containsAny(myKeys) }
+            return keysToCheck.any { it.containsAny(myKeys) } || isKeyRegistered(keysToCheck, ids)
         }
+
+        private fun isKeyRegistered(keys: List<PublicKey>, ids: IdentityService): Boolean {
+            var isMine = false
+            keys.forEach {
+                isMine = isMine || ids.partyFromKey(it) != null
+            }
+
+            return isMine
+        }
+
     }
 
     private class InnerState {
@@ -145,7 +156,8 @@ class NodeVaultService(
             val persistentStateRef = PersistentStateRef(stateAndRef.key)
             // This check is done to set the "relevancyStatus". When one performs a vault query, it is possible to return ALL states, ONLY
             // RELEVANT states or NOT relevant states.
-            val isRelevant = isRelevant(stateOnly, keyManagementService.filterMyKeys(keys).toSet())
+
+            val isRelevant = isRelevant(stateOnly, keyManagementService.filterMyKeys(keys).toSet(), (keyManagementService as KeyManagementServiceInternal).identityService)
             val constraintInfo = Vault.ConstraintInfo(stateAndRef.value.state.constraint)
             // Save a row for each party in the state_party table.
             // TODO: Perhaps these can be stored in a batch?
@@ -287,7 +299,7 @@ class NodeVaultService(
             val ourNewStates = when (statesToRecord) {
                 StatesToRecord.NONE -> throw AssertionError("Should not reach here")
                 StatesToRecord.ONLY_RELEVANT -> outputs.filter { (_, value) ->
-                    isRelevant(value.data, keyManagementService.filterMyKeys(outputs.values.flatMap { it.data.participants.map { it.owningKey } }).toSet())
+                    isRelevant(value.data, keyManagementService.filterMyKeys(outputs.values.flatMap { it.data.participants.map { it.owningKey } }).toSet(), (keyManagementService as KeyManagementServiceInternal).identityService)
                 }
                 StatesToRecord.ALL_VISIBLE -> if (previouslySeen) {
                     // For transactions being re-recorded, the node must check its vault to find out what states it has already seen. Note
@@ -347,7 +359,7 @@ class NodeVaultService(
             val myKeys by lazy { keyManagementService.filterMyKeys(ltx.outputs.flatMap { it.data.participants.map { it.owningKey } }) }
             val (consumedStateAndRefs, producedStates) = ltx.inputs.zip(ltx.outputs).filter { (_, output) ->
                 if (statesToRecord == StatesToRecord.ONLY_RELEVANT) {
-                    isRelevant(output.data, myKeys.toSet())
+                    isRelevant(output.data, myKeys.toSet(), (keyManagementService as KeyManagementServiceInternal).identityService)
                 } else {
                     true
                 }

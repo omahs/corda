@@ -97,7 +97,7 @@ class VaultStateMigration : CordaMigration() {
                     // state parties.
                     val myKeys = stateAndRef.state.data.participants.map { participant -> participant.owningKey}
                             .filter { key -> identityService.certificateFromKey(key)?.name == ourName }.toSet()
-                    if (!NodeVaultService.isRelevant(stateAndRef.state.data, myKeys)) {
+                    if (!NodeVaultService.isRelevant(stateAndRef.state.data, myKeys, identityService)) {
                         it.relevancyStatus = Vault.RelevancyStatus.NOT_RELEVANT
                     }
                 } catch (e: VaultStateMigrationException) {
