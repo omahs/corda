@@ -101,6 +101,7 @@ dependencies {
     }
 
     implementation "co.paralleluniverse:quasar-core:$quasar_version"
+    implementation "org.hibernate:hibernate-core:$hibernate_version"
 }
 
 compileJava {

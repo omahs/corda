@@ -83,6 +83,7 @@ import java.time.Clock
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import org.hibernate.internal.SessionFactoryRegistry
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
@@ -620,6 +621,7 @@ open class InternalMockNetwork(cordappPackages: List<String> = emptyList(),
             }
             messagingNetwork.stop()
         }
+        SessionFactoryRegistry.INSTANCE.clearRegistrations()
     }
 
     /** Block until all scheduled activity, active flows and network activity has ceased. */
