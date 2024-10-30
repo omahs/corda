@@ -17,7 +17,7 @@ interface CordappProviderInternal : CordappProvider {
      * Similar to [getContractAttachmentID] except it returns the [ContractAttachment] object and also returns an optional second attachment
      * representing the legacy version (4.11 or earlier) of the contract, if one exists.
      */
-    fun getContractAttachments(contractClassName: ContractClassName): ContractAttachmentWithLegacy?
+    fun getContractAttachments(contractClassName: ContractClassName, minimumPlatformVersion: Int): ContractAttachmentWithLegacy?
 }
 
 data class ContractAttachmentWithLegacy(val currentAttachment: ContractAttachment, val legacyAttachment: ContractAttachment? = null)

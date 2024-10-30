@@ -6,6 +6,7 @@ import net.corda.core.cordapp.Cordapp
 import net.corda.core.cordapp.CordappContext
 import net.corda.core.flows.FlowLogic
 import net.corda.core.internal.DEPLOYED_CORDAPP_UPLOADER
+import net.corda.core.internal.PlatformVersionSwitches
 import net.corda.core.internal.cordapp.ContractAttachmentWithLegacy
 import net.corda.core.internal.cordapp.CordappImpl
 import net.corda.core.internal.cordapp.CordappProviderInternal
@@ -61,9 +62,10 @@ open class CordappProviderImpl(private val cordappLoader: CordappLoader,
         return cordappLoader.cordapps.findCordapp(contractClassName)
     }
 
-    override fun getContractAttachments(contractClassName: ContractClassName): ContractAttachmentWithLegacy? {
+    override fun getContractAttachments(contractClassName: ContractClassName, minimumPlatformVersion: Int): ContractAttachmentWithLegacy? {
         val currentAttachmentId = getContractAttachmentID(contractClassName) ?: return null
-        val legacyAttachmentId = cordappLoader.legacyContractCordapps.findCordapp(contractClassName)
+        val legacyAttachmentId = if (minimumPlatformVersion < PlatformVersionSwitches.LEGACY_ATTACHMENTS)
+            cordappLoader.legacyContractCordapps.findCordapp(contractClassName) else null
         return ContractAttachmentWithLegacy(getContractAttachment(currentAttachmentId), legacyAttachmentId?.let(::getContractAttachment))
     }
 
