@@ -695,10 +695,10 @@ open class TransactionBuilder(
             contractClassName: String,
             statesForException: () -> List<TransactionState<*>>
     ): ContractAttachmentWithLegacy {
-        // TODO Stop using legacy attachments when the 4.12 min platform version is reached https://r3-cev.atlassian.net/browse/ENT-11479
-        val attachmentWithLegacy = cordappProvider.getContractAttachments(contractClassName)
+        // Stop using legacy attachments when the 4.12 min platform version is reached
+        val attachmentWithLegacy = cordappProvider.getContractAttachments(contractClassName, networkParameters.minimumPlatformVersion)
                 ?: throw MissingContractAttachments(statesForException(), contractClassName)
-        if (attachmentWithLegacy.legacyAttachment == null) {
+        if (networkParameters.minimumPlatformVersion < PlatformVersionSwitches.LEGACY_ATTACHMENTS && attachmentWithLegacy.legacyAttachment == null) {
             log.warnOnce("Contract $contractClassName does not have a legacy (4.11 or earlier) version installed. This means the " +
                     "transaction will not be compatible with older nodes.")
         }

@@ -2,6 +2,7 @@ package net.corda.node.internal.cordapp
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import net.corda.core.internal.PlatformVersionSwitches
 import net.corda.core.internal.hash
 import net.corda.core.internal.toPath
 import net.corda.core.node.services.AttachmentId
@@ -134,9 +135,19 @@ class CordappProviderImplTests {
     }
 
     @Test(timeout=300_000)
-    fun `retrieving legacy attachment for contract`() {
+    fun `retrieving legacy attachment for contract on network that does not support pre-412 `() {
         val provider = newCordappProvider(setOf(currentFinanceContractsJar), setOf(legacyFinanceContractsJar))
-        val (current, legacy) = provider.getContractAttachments(Cash::class.java.name)!!
+        val (current, legacy) = provider.getContractAttachments(Cash::class.java.name, PlatformVersionSwitches.LEGACY_ATTACHMENTS)!!
+        assertThat(current.id).isEqualTo(currentFinanceContractsJar.hash)
+        assertThat(legacy?.id).isNull()
+        // getContractAttachmentID should always return the non-legacy attachment ID
+        assertThat(provider.getContractAttachmentID(Cash::class.java.name)).isEqualTo(currentFinanceContractsJar.hash)
+    }
+
+    @Test(timeout = 300_000)
+    fun `retrieving legacy attachment for contract on mixed network of versions`() {
+        val provider = newCordappProvider(setOf(currentFinanceContractsJar), setOf(legacyFinanceContractsJar))
+        val (current, legacy) = provider.getContractAttachments(Cash::class.java.name, PlatformVersionSwitches.LEGACY_ATTACHMENTS - 1)!!
         assertThat(current.id).isEqualTo(currentFinanceContractsJar.hash)
         assertThat(legacy?.id).isEqualTo(legacyFinanceContractsJar.hash)
         // getContractAttachmentID should always return the non-legacy attachment ID
