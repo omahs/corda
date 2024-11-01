@@ -5,7 +5,7 @@ apply plugin: 'corda.common-publishing'
 description 'A javaagent to allow hooking into Kryo checkpoints'
 
 dependencies {
-    compile "org.javassist:javassist:$javaassist_version"
+    implementation "org.javassist:javassist:$javaassist_version"
     compileOnly "com.esotericsoftware:kryo:$kryo_version"
     compileOnly "co.paralleluniverse:quasar-core:$quasar_version"
 
