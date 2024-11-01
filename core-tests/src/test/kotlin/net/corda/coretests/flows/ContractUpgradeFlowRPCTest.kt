@@ -9,6 +9,7 @@ import net.corda.core.CordaRuntimeException
 import net.corda.core.contracts.ContractState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.ContractUpgradeFlow
+import net.corda.core.internal.getRequiredTransaction
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.transactions.ContractUpgradeLedgerTransaction
 import net.corda.core.transactions.SignedTransaction
@@ -23,8 +24,10 @@ import net.corda.coretesting.internal.matchers.rpc.willThrow
 import net.corda.testing.node.User
 import net.corda.testing.node.internal.*
 import org.junit.AfterClass
+import org.junit.Ignore
 import org.junit.Test
 
+@Ignore("Explicit contract upgrade not supported in 4.12")
 class ContractUpgradeFlowRPCTest : WithContracts, WithFinality {
     companion object {
         private val classMockNet = InternalMockNetwork(cordappsForAllNodes = listOf(DUMMY_CONTRACTS_CORDAPP, enclosedCordapp()))
@@ -120,8 +123,7 @@ class ContractUpgradeFlowRPCTest : WithContracts, WithFinality {
                     isUpgrade<FROM, TO>())
 
     private fun TestStartedNode.getContractUpgradeTransaction(state: StateAndRef<ContractState>) =
-            services.validatedTransactions.getTransaction(state.ref.txhash)!!
-                    .resolveContractUpgradeTransaction(services)
+            services.getRequiredTransaction(state.ref.txhash).resolveContractUpgradeTransaction(services)
 
     private inline fun <reified FROM : Any, reified TO : Any> isUpgrade() =
             isUpgradeFrom<FROM>() and isUpgradeTo<TO>()
