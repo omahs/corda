@@ -5,21 +5,13 @@ apply plugin: 'corda.common-publishing'
 description 'A javaagent to allow hooking into Kryo checkpoints'
 
 dependencies {
-    compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     implementation "org.javassist:javassist:$javaassist_version"
     compileOnly "com.esotericsoftware:kryo:$kryo_version"
     compileOnly "co.paralleluniverse:quasar-core:$quasar_version"
 
-    implementation (project(':core')) {
-        transitive = false
+    compileOnly (project(':core')) {
+        transitive = true
     }
-
-    // Unit testing helpers.
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit_jupiter_version}"
-    testImplementation "junit:junit:$junit_version"
-
-    // SLF4J: commons-logging bindings for a SLF4J back end
-    implementation "org.slf4j:slf4j-api:$slf4j_version"
 }
 
 configurations.implementation.canBeResolved = true
