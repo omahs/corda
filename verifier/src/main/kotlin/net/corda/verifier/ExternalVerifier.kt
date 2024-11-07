@@ -56,19 +56,18 @@ class ExternalVerifier(private val channel: SocketChannel) {
         private val log = contextLogger()
     }
 
-    private val attachmentsClassLoaderCache: AttachmentsClassLoaderCache
     private val attachmentFixups = AttachmentFixups()
     private val parties: OptionalCache<PublicKey, Party>
     private val attachments: OptionalCache<SecureHash, AttachmentWithTrust>
     private val networkParametersMap: OptionalCache<SecureHash, NetworkParameters>
     private val trustedClassAttachments: Cache<String, List<SecureHash>>
+    private val cacheFactory = ExternalVerifierNamedCacheFactory()
 
+    private lateinit var attachmentsClassLoaderCache: AttachmentsClassLoaderCache
     private lateinit var currentNetworkParameters: NetworkParameters
     private lateinit var rotatedKeys: RotatedKeys
 
     init {
-        val cacheFactory = ExternalVerifierNamedCacheFactory()
-        attachmentsClassLoaderCache = AttachmentsClassLoaderCacheImpl(cacheFactory)
         parties = cacheFactory.buildNamed("ExternalVerifier_parties")
         attachments = cacheFactory.buildNamed("ExternalVerifier_attachments")
         networkParametersMap = cacheFactory.buildNamed("ExternalVerifier_networkParameters")
@@ -98,6 +97,7 @@ class ExternalVerifier(private val channel: SocketChannel) {
         currentNetworkParameters = initialisation.currentNetworkParameters
         networkParametersMap.put(initialisation.serializedCurrentNetworkParameters.hash, Optional.of(currentNetworkParameters))
         rotatedKeys = initialisation.rotatedKeys
+        attachmentsClassLoaderCache = AttachmentsClassLoaderCacheImpl(cacheFactory, rotatedKeys)
         log.info("External verifier initialised")
     }
 
